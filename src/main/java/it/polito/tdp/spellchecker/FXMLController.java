@@ -4,18 +4,12 @@
 
 package it.polito.tdp.spellchecker;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URL;
 import java.rmi.UnexpectedException;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import it.polito.tdp.spellchecker.model.Model;
-import it.polito.tdp.spellchecker.model.RichWord;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -66,7 +60,7 @@ public class FXMLController {
 
     @FXML
     void doSpellCheck(ActionEvent event) {
-    	long start = System.currentTimeMillis();
+    	
     	String lingua = this.cmbLingue.getValue();
     	dizionario.clear();
     	try {
@@ -74,19 +68,30 @@ public class FXMLController {
     	} catch (UnexpectedException ue) {
     		txtResult.setText(ue.getMessage());
     		ue.printStackTrace();
+    		return;
     	} 
     	
     	String word = txtInput.getText();
     	
-    	Set <String> res = dizionario.getUncorrectWord(word); //.replaceAll("“[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"]", "")
+    	long startL = System.nanoTime();
+    	Set <String> res = dizionario.spellCheckerLinear(word.replaceAll("“[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"]", "")); //
+    	long endL = System.nanoTime();
+    	
+    	// long startD = System.currentTimeMillis();
+    	Set <String> res2 = dizionario.spellCheckerDichotomic(word.replaceAll("“[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"]", "")); //.replaceAll("“[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\[\\]\"]", "")
+    	long endD = System.nanoTime();
     	
     	for(String s : res) {
     		txtResult.appendText(s+"\n");
     	}
+    	txtResult.appendText("-----------------------\n");
+    	for(String s : res2) {
+    		txtResult.appendText(s+"\n");
+    	}
     	
     	txtInput.clear();
-    	long end = System.currentTimeMillis();
-    	this.txtCompletionTime.setText("Completion time: "+ (end-start)+" milliseconds");
+    	
+    	this.txtCompletionTime.setText("Completion time (linear): "+ (endL-startL)+" nanoseconds"+"\nCompletion Time (dichotomic): "+ (endD-endL)+" nanoseconds");
     }
     
     

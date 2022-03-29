@@ -12,10 +12,10 @@ import java.util.Set;
 
 public class Model {
 	
-	Set <RichWord> dictionary;
+	List <RichWord> dictionary;
 	
 	public Model () {
-		this.dictionary = new HashSet <> () ;
+		this.dictionary = new ArrayList <> () ;
 	}
 	
 	public void add(RichWord s) {
@@ -34,22 +34,80 @@ public class Model {
 				res = true;
 				break;
 			}
-			
-			
 		return res;
 	}
 	
-	public Set <String> getUncorrectWord(String input) {
+//	public Set <String> getUncorrectWord(String input) {
+//		String[] parole = input.split(" ");
+//		Set <String> result = new HashSet <> ();
+//		
+//		for(int i=0; i<parole.length; i++) {
+//			if(!this.findWord(parole[i]))
+//				result.add(parole[i]);
+//		}		
+//		return result;
+//	}
+	
+	public Set<String> spellCheckerLinear(String input) {
 		String[] parole = input.split(" ");
 		Set <String> result = new HashSet <> ();
 		
-		for(int i=0; i<parole.length; i++) {
-			if(!this.findWord(parole[i]))
-				result.add(parole[i]);
-		}		
+		for(String s : parole) {
+			if(!this.findWord(s))
+				result.add(s);
+		}
+		
 		return result;
 	}
 	
+	public boolean eseguiRicercaDichotomic(String s) {
+		boolean found = false;
+		List <Integer> index = new ArrayList<> ();
+		index.add(this.dictionary.size()/2);
+		int i = 0;
+		boolean f1 = false;
+		boolean f2 = false;
+		do {
+			if(s.compareTo(this.dictionary.get(index.get(i)).getWord())==0) {
+				found = true;
+			}
+			// TODO: entra sempre in questo else if e non va nell'altro!
+			else if(s.compareTo(this.dictionary.get(i).getWord()) > 0) {
+				if(!f2) {
+					index.add(index.get(i) + (this.dictionary.size()-index.get(i))/2); 
+					f1 = true;
+				} else {
+					index.add(index.get(i) + (index.get(i-1)-index.get(i))/2);
+				}
+			} else if(s.compareTo(this.dictionary.get(i).getWord()) < 0) {
+				if(!f1) {
+					index.add(index.get(i) - (this.dictionary.size()-index.get(i))/2);
+					f2 = true;
+				}
+				else {
+					index.add(index.get(i) - (index.get(i)-index.get(i-1))/2);
+				}			
+			}
+			i++;
+			
+		} while(!found && index.get(i)!=0 && index.get(i)!=(this.dictionary.size()-1));
+		
+		return found;
+	}
+	
+	public Set<String> spellCheckerDichotomic(String input) {
+		String[] parole = input.split(" ");
+		Set <String> result = new HashSet <> ();	
+		
+		for(String s : parole) {
+			boolean b = this.eseguiRicercaDichotomic(s);		
+			if(!b)
+				result.add(s);
+		}
+		
+		return result;
+	}
+ 	
 	public void loadDictionary(String lingua) throws UnexpectedException {
     	if(lingua.equalsIgnoreCase("English") || lingua.equalsIgnoreCase("Inglese") || lingua.equalsIgnoreCase("Italiano") || lingua.equalsIgnoreCase("italian") ) {
     		try {
